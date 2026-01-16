@@ -62,10 +62,10 @@ jobs:
 
       - name: Build and start services
         run: |
-          docker-compose up -d blockchain
-          sleep 10
-          docker-compose up deployer
-          docker-compose up -d frontend
+          docker compose up -d blockchain
+          sleep 15
+          docker compose up deployer
+          docker compose up -d frontend
 
       - name: Wait for frontend
         run: |
@@ -87,4 +87,4 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker-compose down
+        run: docker compose down
