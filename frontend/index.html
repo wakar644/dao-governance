@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAO Governance Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🏛️</div>
+                <span>DAO Governance</span>
+            </div>
+            <div class="wallet-section">
+                <div id="network-badge" class="network-badge hidden">
+                    <span class="network-dot"></span>
+                    <span id="network-name">Hardhat Local</span>
+                </div>
+                <select id="account-selector" class="account-selector hidden">
+                    <option value="">Select Account</option>
+                </select>
+                <button id="connect-btn" class="btn btn-primary">
+                    <span id="connect-text">Connect Wallet</span>
+                </button>
+            </div>
+        </header>
+
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Connection Required Message -->
+            <div id="connect-prompt" class="connect-prompt">
+                <div class="connect-card">
+                    <div class="connect-icon">🔗</div>
+                    <h2>Connect Your Wallet</h2>
+                    <p>Connect MetaMask to interact with the DAO</p>
+                    <button id="connect-btn-main" class="btn btn-primary btn-large">
+                        Connect MetaMask
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard (hidden until connected) -->
+            <div id="dashboard" class="dashboard hidden">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Your Role</span>
+                            <span id="user-role" class="stat-value">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Proposals</span>
+                            <span id="proposal-count" class="stat-value">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🪙</div>
+                        <div class="stat-info">
+                            <span class="stat-label">GOV Balance</span>
+                            <span id="token-balance" class="stat-value">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⛓️</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Current Block</span>
+                            <span id="current-block" class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Panel -->
+                <section class="section" id="admin-section">
+                    <div class="section-header">
+                        <h2>🔧 Admin Panel</h2>
+                    </div>
+                    <div class="admin-grid">
+                        <!-- Add Council Member -->
+                        <div class="admin-card">
+                            <h3>Add Council Member</h3>
+                            <input type="text" id="add-council-address" class="input" placeholder="0x..." />
+                            <button id="add-council-btn" class="btn btn-primary">Add to Council</button>
+                        </div>
+                        <!-- Remove Council Member -->
+                        <div class="admin-card">
+                            <h3>Remove Council Member</h3>
+                            <input type="text" id="remove-council-address" class="input" placeholder="0x..." />
+                            <button id="remove-council-btn" class="btn btn-error">Remove from Council</button>
+                        </div>
+                        <!-- Add TC Member -->
+                        <div class="admin-card">
+                            <h3>Add Technical Committee</h3>
+                            <input type="text" id="add-tc-address" class="input" placeholder="0x..." />
+                            <button id="add-tc-btn" class="btn btn-primary">Add to TC</button>
+                        </div>
+                        <!-- Remove TC Member -->
+                        <div class="admin-card">
+                            <h3>Remove Technical Committee</h3>
+                            <input type="text" id="remove-tc-address" class="input" placeholder="0x..." />
+                            <button id="remove-tc-btn" class="btn btn-error">Remove from TC</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Create Proposal Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2>Create Proposal</h2>
+                    </div>
+                    <div class="proposal-form">
+                        <!-- Voting Type -->
+                        <div class="form-group">
+                            <label>Voting Type</label>
+                            <select id="proposal-type" class="input" onchange="toggleProposalType()">
+                                <option value="council">Council Proposal (1 member = 1 vote)</option>
+                                <option value="referendum">Public Referendum (Token-weighted)</option>
+                            </select>
+                        </div>
+
+                        <!-- Action Type -->
+                        <div class="form-group">
+                            <label>Action Type</label>
+                            <select id="action-type" class="input" onchange="toggleActionType()">
+                                <option value="add-council">👤 Add Council Member</option>
+                                <option value="remove-council">👤 Remove Council Member</option>
+                                <option value="add-tc">⚙️ Add Technical Committee</option>
+                                <option value="remove-tc">⚙️ Remove Technical Committee</option>
+                                <option value="send-eth">💰 Send ETH</option>
+                                <option value="custom">📝 Custom Calldata</option>
+                            </select>
+                        </div>
+
+                        <!-- Target Address (for role actions) -->
+                        <div class="form-group" id="target-address-group">
+                            <label id="target-address-label">Target Address</label>
+                            <input type="text" id="target-address" class="input" placeholder="0x..." />
+                        </div>
+
+                        <!-- ETH Amount (for send-eth) -->
+                        <div class="form-group hidden" id="eth-amount-group">
+                            <label>ETH Amount</label>
+                            <input type="number" id="eth-amount" class="input" placeholder="0.1" step="0.01" min="0" />
+                        </div>
+
+                        <!-- Custom Calldata -->
+                        <div class="form-group hidden" id="custom-calldata-group">
+                            <label>Contract Address</label>
+                            <input type="text" id="custom-contract" class="input" placeholder="0x..." />
+                            <label style="margin-top: 0.5rem;">Calldata (hex)</label>
+                            <input type="text" id="custom-calldata" class="input" placeholder="0x..." />
+                            <label style="margin-top: 0.5rem;">ETH Value (optional)</label>
+                            <input type="number" id="custom-value" class="input" placeholder="0" step="0.01" min="0" />
+                        </div>
+
+                        <!-- Threshold & Duration -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label id="threshold-label">Threshold (votes)</label>
+                                <input type="number" id="threshold" class="input" value="2" min="1" />
+                            </div>
+                            <div class="form-group">
+                                <label>Duration (blocks)</label>
+                                <input type="number" id="duration" class="input" value="100" min="1" />
+                            </div>
+                        </div>
+
+                        <!-- Token Amount for Referendum -->
+                        <div class="form-group hidden" id="token-amount-group">
+                            <label>Your Vote Amount (GOV tokens)</label>
+                            <input type="number" id="vote-token-amount" class="input" value="100" min="1" />
+                        </div>
+
+                        <button id="create-proposal-btn" class="btn btn-primary">Create Proposal</button>
+                    </div>
+                </section>
+
+
+                <!-- Active Proposals -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2>Proposals</h2>
+                        <button id="refresh-btn" class="btn btn-secondary btn-small">Refresh</button>
+                    </div>
+                    <div id="proposals-list" class="proposals-list">
+                        <div class="loading">Loading proposals...</div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Fast-Track Modal -->
+        <div id="fasttrack-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>⚡ Fast-Track Proposal</h3>
+                <p>Set new voting duration (in blocks):</p>
+                <input type="number" id="fasttrack-duration" class="input" value="10" min="1" />
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeFastTrackModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="confirmFastTrack()">Fast-Track</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Token Vote Modal -->
+        <div id="token-vote-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>🪙 Vote with Tokens</h3>
+                <p>Enter amount of GOV tokens to vote with:</p>
+                <input type="number" id="token-vote-amount" class="input" value="100" min="1" />
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeTokenVoteModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="confirmTokenVote(true)">Vote Aye</button>
+                    <button class="btn btn-error" onclick="confirmTokenVote(false)">Vote Nay</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast-container" class="toast-container"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
