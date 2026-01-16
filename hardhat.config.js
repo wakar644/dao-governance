@@ -15,7 +15,7 @@ module.exports = {
     },
     networks: {
         localhost: {
-            url: "http://127.0.0.1:8545"
+            url: process.env.RPC_URL || "http://127.0.0.1:8545"
         },
         sepolia: {
             url: process.env.SEPOLIA_RPC_URL || "",
