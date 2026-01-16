@@ -25,8 +25,8 @@ FROM node:18-alpine AS production
 
 WORKDIR /app
 
-# Install serve for frontend
-RUN npm install -g serve
+# Install curl for healthcheck and serve for frontend
+RUN apk add --no-cache curl && npm install -g serve
 
 # Copy built artifacts from builder
 COPY --from=builder /app/node_modules ./node_modules
@@ -46,8 +46,8 @@ COPY frontend/ ./frontend/
 EXPOSE 8545 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD curl -sf http://localhost:3000 || exit 1
 
 # Default command (can be overridden by docker-compose)
 CMD ["sh", "-c", "npx hardhat node & sleep 5 && npx hardhat run scripts/deployV2.js --network localhost && serve -s frontend -l 3000"]
